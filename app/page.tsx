@@ -28,30 +28,16 @@ export default function Home() {
                   <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
                   <line x1="12" y1="22.08" x2="12" y2="12"></line>
                 </svg>
-                <span className="text-white font-semibold text-sm tracking-widest uppercase">DREAMFRAME</span>
+                <span className="text-white font-semibold text-sm tracking-widest uppercase">Automatrix</span>
               </div>
 
               {/* Navigation - hidden on small screens */}
               <nav className="hidden md:flex items-center gap-10">
-                <Link href="#features" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Features</Link>
-                <Link href="#gallery" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Gallery</Link>
-                <Link href="#pricing" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Pricing</Link>
-                <Link href="#api" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">API</Link>
+                <Link href="#features" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Características</Link>
+                <Link href="#gallery" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Galería</Link>
+                <Link href="#pricing" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Precios</Link>
+                <Link href="#api" className="text-gray-300 hover:text-white transition-colors text-xs tracking-wider uppercase">Demos</Link>
               </nav>
-
-              {/* Auth Button */}
-              <div className="hidden sm:block">
-                <Link
-                  href="/login"
-                  className="px-6 py-2 rounded-full border border-white/30 text-white hover:bg-white/10 transition-colors text-xs tracking-wider uppercase inline-flex items-center gap-2"
-                >
-                  Sign In
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M5 12h14"></path>
-                    <path d="m12 5 7 7-7 7"></path>
-                  </svg>
-                </Link>
-              </div>
             </header>
 
             {/* Main Hero Content */}
@@ -74,7 +60,7 @@ export default function Home() {
 
               <Link href="/create" className="inline-flex items-center gap-3 text-white text-sm font-medium tracking-wider uppercase group w-fit">
                 <span className="relative pb-1">
-                  Start Creating
+                  Solicitanos tu Creación
                   <span className="absolute bottom-0 left-0 w-full h-[1px] bg-gradient-to-r from-orange-400 to-purple-500 scale-x-100 origin-left transition-transform duration-300"></span>
                 </span>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="transition-transform duration-300 group-hover:translate-x-1 text-purple-400">
