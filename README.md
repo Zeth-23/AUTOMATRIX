@@ -1,1 +1,0 @@
-> yordi es medio gay
