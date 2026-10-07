@@ -2,8 +2,6 @@ import Link from "next/link";
 import ScrollCanvas from "./components/ScrollCanvas";
 import ModelViewer3D from "./components/ModelViewer3D";
 
-export const runtime = 'edge';
-
 export default function Home() {
   return (
     <>
