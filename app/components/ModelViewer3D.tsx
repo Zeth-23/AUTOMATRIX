@@ -16,7 +16,6 @@ export default function ModelViewer3D({
 }: ModelViewer3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -67,12 +66,10 @@ export default function ModelViewer3D({
 
     controls.addEventListener("start", () => {
       controls.autoRotate = false;
-      setIsDragging(true);
       clearTimeout(autoRotateTimeout);
     });
 
     controls.addEventListener("end", () => {
-      setIsDragging(false);
       clearTimeout(autoRotateTimeout);
       autoRotateTimeout = setTimeout(() => {
         controls.autoRotate = true;
@@ -281,29 +278,6 @@ export default function ModelViewer3D({
           </div>
         </div>
       )}
-
-      {/* Floating 3D Interaction Hint Badge */}
-      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none z-20">
-        <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/80 backdrop-blur-md border border-black/10 shadow-md text-xs font-medium text-gray-800 select-none">
-          <svg
-            className={`w-4 h-4 text-gray-600 transition-transform ${
-              isDragging ? "scale-125 text-black" : "animate-spin"
-            }`}
-            style={{ animationDuration: "6s" }}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-            strokeWidth="2"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-            />
-          </svg>
-          <span>360° Free Rotation • Drag anywhere to rotate</span>
-        </div>
-      </div>
     </div>
   );
 }
