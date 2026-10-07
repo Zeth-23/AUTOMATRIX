@@ -265,12 +265,12 @@ export default function Home() {
             </div>
 
             {/* Center 3D Model Creator with interactive rotation */}
-            <div className="md:col-span-5 flex items-center justify-center relative -my-4 md:-my-10 z-10">
+            <div className="md:col-span-6 flex items-center justify-center relative -my-8 md:-my-24 lg:-my-32 z-10">
               <ModelViewer3D modelPath="/3D-model/Caballero_Corona.glb" />
             </div>
 
             {/* Right block: vertical stat pills + CTA */}
-            <div className="md:col-span-4 flex flex-col justify-between h-full gap-8 z-20">
+            <div className="md:col-span-3 flex flex-col justify-between h-full gap-8 z-20">
               {/* Stat rows */}
               <div className="flex flex-col gap-5">
                 <div className="flex items-center justify-between border-b border-black/10 pb-4">
