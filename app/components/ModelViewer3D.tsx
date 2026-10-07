@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import { DRACOLoader } from "three/examples/jsm/loaders/DRACOLoader.js";
+import { MeshoptDecoder } from "three/examples/jsm/libs/meshopt_decoder.module.js";
 
 interface ModelViewer3DProps {
   modelPath?: string;
@@ -126,6 +128,15 @@ export default function ModelViewer3D({
 
     // Load the 3D model
     const loader = new GLTFLoader();
+
+    // Enable Meshopt compression decoding
+    loader.setMeshoptDecoder(MeshoptDecoder);
+
+    // Enable Draco compression decoding
+    const dracoLoader = new DRACOLoader();
+    dracoLoader.setDecoderPath("https://www.gstatic.com/draco/versioned/decoders/1.5.7/");
+    loader.setDRACOLoader(dracoLoader);
+
     loader.load(
       modelPath,
       (gltf) => {
@@ -133,6 +144,8 @@ export default function ModelViewer3D({
         gltf.scene.traverse((child) => {
           if ((child as THREE.Mesh).isMesh) {
             hasMeshes = true;
+            child.castShadow = true;
+            child.receiveShadow = true;
           }
         });
 
@@ -143,7 +156,7 @@ export default function ModelViewer3D({
           const center = box.getCenter(new THREE.Vector3());
 
           const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 2.8 / (maxDim || 1);
+          const scale = 3.2 / (maxDim || 1);
           gltf.scene.scale.setScalar(scale);
 
           gltf.scene.position.x = -center.x * scale;
@@ -190,11 +203,11 @@ export default function ModelViewer3D({
     shadowMesh.position.y = -1.75;
     scene.add(shadowMesh);
 
-    // Animation Loop
-    const clock = new THREE.Clock();
+    // Animation Loop using performance.now() to avoid deprecated THREE.Clock
+    const startTime = performance.now();
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
-      const elapsedTime = clock.getElapsedTime();
+      const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Floating bobbing effect
       modelGroup.position.y = Math.sin(elapsedTime * 1.5) * 0.12;
@@ -222,6 +235,7 @@ export default function ModelViewer3D({
     return () => {
       cancelAnimationFrame(animationFrameId);
       resizeObserver.disconnect();
+      dracoLoader.dispose();
       controls.dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode) {
