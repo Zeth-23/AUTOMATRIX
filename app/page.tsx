@@ -220,7 +220,7 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-20"></div>
 
                 <div className="absolute bottom-0 left-0 p-8 w-full z-30">
-                  <h3 className="text-white text-xl font-medium mb-1">Scalable Architecture</h3>
+                  <h3 className="text-white text-xl font-medium mb-1">Automatizaciones</h3>
                   <p className="text-gray-400 text-sm font-light">Enterprise-grade infrastructure</p>
                 </div>
               </div>
@@ -233,8 +233,8 @@ export default function Home() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-20"></div>
 
                 <div className="absolute bottom-0 left-0 p-8 w-full z-30">
-                  <h3 className="text-white text-xl font-medium mb-1">Modern UI/UX</h3>
-                  <p className="text-gray-400 text-sm font-light">Pixel-perfect experiences</p>
+                  <h3 className="text-white text-xl font-medium mb-1">Diseños Modernos</h3>
+                  <p className="text-gray-400 text-sm font-light">plasmamos lo que te imaginas</p>
                 </div>
               </div>
 
