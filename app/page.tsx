@@ -226,6 +226,75 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      {/* AI Platform Showcase Section — Light background */}
+      <section className="relative bg-[#f2f2f0] overflow-hidden py-16 md:py-24">
+        {/* Full-width container */}
+        <div className="max-w-screen-2xl mx-auto px-6 md:px-12 lg:px-20 relative z-10">
+
+          {/* Giant headline */}
+          <h2
+            className="font-[family-name:var(--font-playfair)] text-[clamp(3.5rem,12vw,11rem)] leading-[0.95] font-normal text-black tracking-tight select-none"
+          >
+            DREAM<span className="text-transparent" style={{ WebkitTextStroke: '2px #000' }}>FRAME</span>.
+          </h2>
+
+          {/* Bottom row: stats left, description center-left, metrics right */}
+          <div className="mt-12 md:mt-20 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-6 items-end">
+
+            {/* Left block: avatar stack + big stat */}
+            <div className="md:col-span-3 flex flex-col gap-6">
+              {/* Avatar stack */}
+              <div className="flex items-center gap-4">
+                <div className="flex -space-x-3">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-400 to-pink-400 border-2 border-[#f2f2f0]"></div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-[#f2f2f0]"></div>
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 border-2 border-[#f2f2f0]"></div>
+                </div>
+                <div>
+                  <span className="text-3xl md:text-4xl font-bold text-black leading-none">2M+</span>
+                  <p className="text-gray-500 text-xs mt-0.5">Images generated</p>
+                </div>
+              </div>
+
+              {/* Description */}
+              <p className="text-black text-lg md:text-xl font-medium leading-snug max-w-xs">
+                The AI platform that keeps your flow with smart generation and built-in editing tools.
+              </p>
+            </div>
+
+            {/* Center spacer — visual breathing room on desktop */}
+            <div className="hidden md:block md:col-span-5"></div>
+
+            {/* Right block: vertical stat pills + CTA */}
+            <div className="md:col-span-4 flex flex-col gap-5">
+              {/* Stat rows */}
+              <div className="flex items-center justify-between border-b border-black/10 pb-4">
+                <span className="text-sm text-gray-500 uppercase tracking-wider">Styles Available</span>
+                <span className="text-2xl font-bold text-black">150+</span>
+              </div>
+              <div className="flex items-center justify-between border-b border-black/10 pb-4">
+                <span className="text-sm text-gray-500 uppercase tracking-wider">Collaboration</span>
+                <span className="text-2xl font-bold text-black">Real-time</span>
+              </div>
+              <div className="flex items-center justify-between pb-4">
+                <span className="text-sm text-gray-500 uppercase tracking-wider">AI Models</span>
+                <span className="text-2xl font-bold text-black">Next-gen</span>
+              </div>
+
+              {/* CTA button */}
+              <Link
+                href="#how-it-works"
+                className="mt-2 self-end inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors group"
+              >
+                <span className="w-2 h-2 rounded-full bg-lime-400 group-hover:scale-125 transition-transform"></span>
+                How it works
+              </Link>
+            </div>
+
+          </div>
+        </div>
+      </section>
     </div>
     </>
   );
