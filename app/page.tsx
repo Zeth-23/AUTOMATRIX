@@ -1,5 +1,6 @@
 import Link from "next/link";
 import ScrollCanvas from "./components/ScrollCanvas";
+import ModelViewer3D from "./components/ModelViewer3D";
 
 export const runtime = 'edge';
 
@@ -263,33 +264,39 @@ export default function Home() {
               </p>
             </div>
 
-            {/* Center spacer — visual breathing room on desktop */}
-            <div className="hidden md:block md:col-span-5"></div>
+            {/* Center 3D Model Creator with interactive rotation */}
+            <div className="md:col-span-5 flex items-center justify-center relative -my-4 md:-my-10 z-10">
+              <ModelViewer3D modelPath="/3D-model/Caballero_Corona.glb" />
+            </div>
 
             {/* Right block: vertical stat pills + CTA */}
-            <div className="md:col-span-4 flex flex-col gap-5">
+            <div className="md:col-span-4 flex flex-col justify-between h-full gap-8 z-20">
               {/* Stat rows */}
-              <div className="flex items-center justify-between border-b border-black/10 pb-4">
-                <span className="text-sm text-gray-500 uppercase tracking-wider">Styles Available</span>
-                <span className="text-2xl font-bold text-black">150+</span>
-              </div>
-              <div className="flex items-center justify-between border-b border-black/10 pb-4">
-                <span className="text-sm text-gray-500 uppercase tracking-wider">Collaboration</span>
-                <span className="text-2xl font-bold text-black">Real-time</span>
-              </div>
-              <div className="flex items-center justify-between pb-4">
-                <span className="text-sm text-gray-500 uppercase tracking-wider">AI Models</span>
-                <span className="text-2xl font-bold text-black">Next-gen</span>
+              <div className="flex flex-col gap-5">
+                <div className="flex items-center justify-between border-b border-black/10 pb-4">
+                  <span className="text-sm text-gray-500 uppercase tracking-wider">Styles Available</span>
+                  <span className="text-2xl font-bold text-black">150+</span>
+                </div>
+                <div className="flex items-center justify-between border-b border-black/10 pb-4">
+                  <span className="text-sm text-gray-500 uppercase tracking-wider">Collaboration</span>
+                  <span className="text-2xl font-bold text-black">Real-time</span>
+                </div>
+                <div className="flex items-center justify-between pb-2">
+                  <span className="text-sm text-gray-500 uppercase tracking-wider">AI Models</span>
+                  <span className="text-2xl font-bold text-black">Next-gen</span>
+                </div>
               </div>
 
-              {/* CTA button */}
-              <Link
-                href="#how-it-works"
-                className="mt-2 self-end inline-flex items-center gap-2 px-7 py-3.5 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-800 transition-colors group"
-              >
-                <span className="w-2 h-2 rounded-full bg-lime-400 group-hover:scale-125 transition-transform"></span>
-                How it works
-              </Link>
+              {/* Circular CTA button matching the reference */}
+              <div className="flex justify-end pt-2">
+                <Link
+                  href="#how-it-works"
+                  className="w-28 h-28 rounded-full bg-[#d4f842] text-black font-semibold text-xs flex items-center justify-center gap-1.5 shadow-lg hover:scale-105 active:scale-95 transition-transform duration-300 group cursor-pointer text-center px-2"
+                >
+                  <span className="text-[10px]">▶</span>
+                  <span>How it works?</span>
+                </Link>
+              </div>
             </div>
 
           </div>
