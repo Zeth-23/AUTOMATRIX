@@ -5,7 +5,7 @@ import ModelViewer3D from "./components/ModelViewer3D";
 export default function Home() {
   return (
     <>
-      <div className="relative font-sans bg-black h-[400vh]">
+      <div id="hero-track" className="relative font-sans bg-black h-[450vh]">
       {/* Sticky container that stays in view while scrolling */}
       <div className="sticky top-0 h-screen overflow-hidden flex flex-col">
 
