@@ -67,6 +67,8 @@ export default function DreamframeStudio() {
     },
   ];
 
+  const selectedModel = modelsList.find((m) => m.id === selectedModelId) || modelsList[0];
+
   // Map light modes to colors for 3D Viewer
   const lightColors: Record<string, string> = {
     white: "#ffffff",
@@ -436,9 +438,9 @@ export default function DreamframeStudio() {
         </div>
 
         {/* CENTER COLUMN: 3D MODEL VIEWPORT & HERO TITLE */}
-        <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2 relative py-2">
-          {/* Main 3D Canvas */}
-          <div className="relative w-full max-w-[580px] h-[360px] xs:h-[420px] sm:h-[480px] md:h-[520px] flex items-center justify-center">
+        <div className="lg:col-span-6 flex flex-col items-center justify-center order-1 lg:order-2 relative py-1 w-full">
+          {/* Main 3D Canvas — Amplio campo de acción sin límites restrictivos */}
+          <div className="relative w-full h-[500px] xs:h-[580px] sm:h-[660px] md:h-[720px] lg:h-[780px] xl:h-[840px] flex items-center justify-center overflow-visible">
             <ModelViewer3D
               modelPath="/3D-model/Caballero_Corona.glb"
               lumen={lumen}
@@ -489,7 +491,7 @@ export default function DreamframeStudio() {
             <button
               onClick={handleResetCamera}
               className="w-7 h-7 rounded-full flex items-center justify-center text-gray-500 hover:text-gray-900 hover:bg-gray-100 transition-colors"
-              title="Reset Viewport Position"
+              title="Centrar y reajustar cámara"
             >
               <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M21 12a9 9 0 1 1-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
@@ -499,9 +501,9 @@ export default function DreamframeStudio() {
           </div>
 
           {/* Model Title & Description as in Reference Image 2 */}
-          <div className="mt-6 sm:mt-8 text-center max-w-lg px-4">
+          <div className="mt-4 sm:mt-6 text-center max-w-lg px-4">
             <h2 className="text-3xl sm:text-4xl lg:text-5xl font-black text-[#1e1b2e] tracking-tight leading-none uppercase">
-              360 <span className="text-[#f97316]">TRAIN</span>
+              360 <span className="text-[#f97316]">{selectedModel.name.replace(" 3D", "")}</span>
             </h2>
             <p className="mt-2.5 text-xs sm:text-[13px] text-gray-500 font-normal leading-relaxed max-w-md mx-auto">
               High-speed aerodynamic train asset generated with neural diffusion. Featuring full 4K PBR textures,
@@ -589,7 +591,7 @@ export default function DreamframeStudio() {
             {/* Track Title */}
             <div className="text-center">
               <h4 className="text-xs font-bold text-gray-800 tracking-tight">
-                Orange Express 3D
+                {selectedModel.name}
               </h4>
               <p className="text-[10px] text-gray-400 font-medium mt-0.5">
                 {isPlaying ? "Ambient Sound • Playing" : "Ambient Sound • Paused"}
