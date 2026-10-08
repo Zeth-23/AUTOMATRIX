@@ -4,6 +4,9 @@ import { useEffect, useRef } from "react";
 
 const FRAME_COUNT = 150;
 const PRELOAD_BATCH_SIZE = 15;
+// Breakpoint exclusively for smartphones / mobile phones (< 768px).
+// Tablets (>= 768px, e.g. iPad 768px/810px) and desktops use the 16:9 desktop sequence.
+const MOBILE_BREAKPOINT = 768;
 
 const pad = (num: number, size: number) => {
   let s = num + "";
@@ -11,35 +14,63 @@ const pad = (num: number, size: number) => {
   return s;
 };
 
-const getFramePath = (index: number) => {
-  return `/fotosCompletas/frame_${pad(index, 3)}.webp`;
+const getFramePath = (index: number, isMobile: boolean) => {
+  const padded = pad(index, 3);
+  if (isMobile) {
+    return `/fotosCompletasmobil/foto_${padded}.webp`;
+  }
+  return `/fotosCompletas/frame_${padded}.webp`;
 };
 
 export default function ScrollCanvas() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const imagesRef = useRef<(HTMLImageElement | null)[]>(
+  const desktopImagesRef = useRef<(HTMLImageElement | null)[]>(
     new Array(FRAME_COUNT + 1).fill(null)
   );
-  const loadedFramesRef = useRef<Set<number>>(new Set());
+  const mobileImagesRef = useRef<(HTMLImageElement | null)[]>(
+    new Array(FRAME_COUNT + 1).fill(null)
+  );
+  const desktopLoadedFramesRef = useRef<Set<number>>(new Set());
+  const mobileLoadedFramesRef = useRef<Set<number>>(new Set());
+  const preloadedModesRef = useRef<Set<boolean>>(new Set());
+
+  const isMobileRef = useRef(false);
   const currentFrameRef = useRef(1);
   const targetFrameRef = useRef(1);
   const rafIdRef = useRef<number | null>(null);
 
   useEffect(() => {
-    const loadFrame = (index: number): Promise<void> => {
+    const checkIsMobile = () => {
+      if (typeof window === "undefined") return false;
+      return window.innerWidth < MOBILE_BREAKPOINT;
+    };
+
+    isMobileRef.current = checkIsMobile();
+
+    const loadFrame = (index: number, isMobileMode: boolean): Promise<void> => {
       return new Promise((resolve) => {
-        if (loadedFramesRef.current.has(index)) {
+        const loadedSet = isMobileMode
+          ? mobileLoadedFramesRef.current
+          : desktopLoadedFramesRef.current;
+        const images = isMobileMode
+          ? mobileImagesRef.current
+          : desktopImagesRef.current;
+
+        if (loadedSet.has(index)) {
           resolve();
           return;
         }
 
         const img = new window.Image();
-        img.src = getFramePath(index);
+        img.src = getFramePath(index, isMobileMode);
         img.onload = () => {
-          imagesRef.current[index] = img;
-          loadedFramesRef.current.add(index);
-          if (index === 1) {
-            renderFrame(1);
+          images[index] = img;
+          loadedSet.add(index);
+          if (isMobileMode === isMobileRef.current) {
+            const currentInt = Math.round(currentFrameRef.current);
+            if (index === 1 || index === currentInt) {
+              renderFrame(currentInt);
+            }
           }
           resolve();
         };
@@ -49,21 +80,25 @@ export default function ScrollCanvas() {
       });
     };
 
-    const preloadFrames = async () => {
-      // First preload frame 1 to show something immediately
-      await loadFrame(1);
+    const preloadFrames = async (isMobileMode: boolean) => {
+      if (preloadedModesRef.current.has(isMobileMode)) return;
+      preloadedModesRef.current.add(isMobileMode);
 
-      // Preload the remaining frames progressively in batches
+      // Preload frame 1 first to display immediately
+      await loadFrame(1, isMobileMode);
+
+      // Preload remaining frames progressively in batches
       for (let i = 2; i <= FRAME_COUNT; i += PRELOAD_BATCH_SIZE) {
         const batch: Promise<void>[] = [];
         for (let j = 0; j < PRELOAD_BATCH_SIZE && i + j <= FRAME_COUNT; j++) {
-          batch.push(loadFrame(i + j));
+          batch.push(loadFrame(i + j, isMobileMode));
         }
         await Promise.all(batch);
       }
     };
 
-    preloadFrames();
+    // Preload initial frames for the current device
+    preloadFrames(isMobileRef.current);
 
     const renderFrame = (index: number) => {
       const canvas = canvasRef.current;
@@ -71,15 +106,32 @@ export default function ScrollCanvas() {
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
 
-      let img = imagesRef.current[index];
+      const isMobile = isMobileRef.current;
+      const images = isMobile
+        ? mobileImagesRef.current
+        : desktopImagesRef.current;
 
-      // Fallback to the closest loaded frame if target frame isn't ready
+      let img = images[index];
+
+      // Fallback to the closest loaded frame in current mode
       if (!img) {
         let fallbackIndex = index;
-        while (fallbackIndex > 1 && !imagesRef.current[fallbackIndex]) {
+        while (fallbackIndex > 1 && !images[fallbackIndex]) {
           fallbackIndex--;
         }
-        img = imagesRef.current[fallbackIndex];
+        img = images[fallbackIndex];
+      }
+
+      // If still not loaded in current mode, check alternative mode as fallback during switch
+      if (!img) {
+        const otherImages = isMobile
+          ? desktopImagesRef.current
+          : mobileImagesRef.current;
+        let fallbackIndex = index;
+        while (fallbackIndex > 1 && !otherImages[fallbackIndex]) {
+          fallbackIndex--;
+        }
+        img = otherImages[fallbackIndex];
       }
 
       const dpr = window.devicePixelRatio || 1;
@@ -146,6 +198,14 @@ export default function ScrollCanvas() {
         Math.max(1, Math.round(scrollFraction * (FRAME_COUNT - 1)) + 1)
       );
       targetFrameRef.current = target;
+
+      // Proactively request loading target frame if not loaded yet
+      const loadedSet = isMobileRef.current
+        ? mobileLoadedFramesRef.current
+        : desktopLoadedFramesRef.current;
+      if (!loadedSet.has(target)) {
+        loadFrame(target, isMobileRef.current);
+      }
     };
 
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -154,6 +214,12 @@ export default function ScrollCanvas() {
     onScroll();
 
     const onResize = () => {
+      const isMobileNow = checkIsMobile();
+      if (isMobileNow !== isMobileRef.current) {
+        isMobileRef.current = isMobileNow;
+        preloadFrames(isMobileNow);
+      }
+
       if (canvasRef.current) {
         canvasRef.current.width = 0;
       }
