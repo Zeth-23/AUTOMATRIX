@@ -135,8 +135,8 @@ export default function DreamframeStudio() {
       />
 
       {/* Atmospheric Cloud Glow behind Knight Model */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[720px] lg:w-[920px] h-[550px] lg:h-[650px] bg-white/70 blur-[90px] rounded-[45%] pointer-events-none z-0" />
-      <div className="absolute top-[35%] left-[48%] -translate-x-1/2 -translate-y-1/2 w-[480px] h-[380px] bg-purple-200/35 blur-[120px] rounded-full pointer-events-none z-0" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] lg:w-[1300px] h-[650px] lg:h-[880px] bg-white/80 blur-[100px] rounded-[45%] pointer-events-none z-0" />
+      <div className="absolute top-[35%] left-[48%] -translate-x-1/2 -translate-y-1/2 w-[580px] h-[480px] bg-purple-200/40 blur-[130px] rounded-full pointer-events-none z-0" />
 
       {/* TOP HEADER BAR */}
       <header className="relative z-30 flex flex-wrap items-center justify-between gap-4 w-full mb-4 sm:mb-6">

@@ -60,9 +60,9 @@ export default function ModelViewer3D({
 
     const getCameraDistance = (w: number, h: number) => {
       const asp = w / h;
-      if (asp < 1.0) return 4.9;
-      if (asp < 1.35) return 4.3;
-      return 3.8;
+      if (asp < 1.0) return 5.4;
+      if (asp < 1.35) return 4.7;
+      return 4.0;
     };
 
     // Camera
@@ -83,14 +83,17 @@ export default function ModelViewer3D({
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Controls
+    // Controls — Full 360° omni-directional rotation, panning, and broad zoom bounds
     const controls = new OrbitControls(camera, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.08;
-    controls.rotateSpeed = 1.15;
+    controls.rotateSpeed = 1.1;
     controls.enableZoom = true;
-    controls.minDistance = 1.2;
-    controls.maxDistance = 8.5;
+    controls.enablePan = true;
+    controls.screenSpacePanning = true;
+    controls.panSpeed = 1.0;
+    controls.minDistance = 0.6;
+    controls.maxDistance = 22.0;
     controls.minPolarAngle = 0;
     controls.maxPolarAngle = Math.PI;
     controls.minAzimuthAngle = -Infinity;
@@ -195,7 +198,8 @@ export default function ModelViewer3D({
           const center = box.getCenter(new THREE.Vector3());
 
           const maxDim = Math.max(size.x, size.y, size.z);
-          const scale = 4.2 / (maxDim || 1);
+          // Scale 2.85 provides full framing for the character without clipping accessories or limbs
+          const scale = 2.85 / (maxDim || 1);
           gltf.scene.scale.setScalar(scale);
 
           gltf.scene.position.x = -center.x * scale;
@@ -339,13 +343,13 @@ export default function ModelViewer3D({
   useEffect(() => {
     if (resetTrigger > 0 && controlsRef.current && cameraRef.current) {
       controlsRef.current.reset();
-      cameraRef.current.position.set(0, 0, 3.8);
+      cameraRef.current.position.set(0, 0, 4.2);
       controlsRef.current.update();
     }
   }, [resetTrigger]);
 
   return (
-    <div className="relative w-full h-[360px] xs:h-[420px] sm:h-[480px] md:h-[520px] flex items-center justify-center overflow-visible select-none">
+    <div className="relative w-full h-full min-h-[480px] xs:min-h-[540px] sm:min-h-[620px] md:min-h-[700px] lg:min-h-[760px] xl:min-h-[820px] flex items-center justify-center overflow-visible select-none">
       {/* Three.js canvas container */}
       <div
         ref={containerRef}
