@@ -32,6 +32,7 @@ export default function ModelViewer3D({
 }: ModelViewer3DProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isVisible, setIsVisible] = useState(false);
 
   // References to dynamic Three.js objects
   const sceneRef = useRef<THREE.Scene | null>(null);
@@ -44,8 +45,35 @@ export default function ModelViewer3D({
   const backLightRef = useRef<THREE.DirectionalLight | null>(null);
   const fillLightRef = useRef<THREE.DirectionalLight | null>(null);
 
+  // Lazy-load Three.js scene only when approaching the viewport to prevent mobile memory exhaustion
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    if (typeof IntersectionObserver === "undefined") {
+      setIsVisible(true);
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) {
+            setIsVisible(true);
+          }
+        }
+      },
+      { rootMargin: "350px" } // Begin loading when within 350px of the section
+    );
+
+    observer.observe(container);
+    return () => observer.disconnect();
+  }, []);
+
   // 1. Initial 3D Scene setup
   useEffect(() => {
+    if (!isVisible) return;
+
     const container = containerRef.current;
     if (!container) return;
 
@@ -70,14 +98,16 @@ export default function ModelViewer3D({
     camera.position.set(0, 0, getCameraDistance(width, height));
     cameraRef.current = camera;
 
-    // Renderer
+    // Renderer — optimized pixel ratio for mobile devices to prevent GPU memory crashes
+    const isMobileDevice = window.innerWidth < 768;
+    const maxDpr = isMobileDevice ? 1.5 : 2;
     const renderer = new THREE.WebGLRenderer({
-      antialias: true,
+      antialias: !isMobileDevice, // Disable heavy antialiasing on mobile GPU
       alpha: true,
       powerPreference: "high-performance",
     });
     renderer.setSize(width, height);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, maxDpr));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = (lumen / 100) * 1.35;
     container.appendChild(renderer.domElement);
@@ -245,10 +275,23 @@ export default function ModelViewer3D({
     shadowMesh.position.y = -2.2;
     scene.add(shadowMesh);
 
-    // Animation Loop
+    // Animation Loop with off-screen pause to prevent mobile GPU and battery drain
+    let isRenderingActive = true;
+    const visibilityObserver = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          isRenderingActive = entry.isIntersecting;
+        }
+      },
+      { rootMargin: "100px" }
+    );
+    visibilityObserver.observe(container);
+
     const startTime = performance.now();
     const animate = () => {
       animationFrameId = requestAnimationFrame(animate);
+      if (!isRenderingActive) return; // Do not render when off-screen
+
       const elapsedTime = (performance.now() - startTime) * 0.001;
 
       // Floating breathing motion
@@ -276,6 +319,7 @@ export default function ModelViewer3D({
     return () => {
       cancelAnimationFrame(animationFrameId);
       clearTimeout(autoRotateTimeout);
+      visibilityObserver.disconnect();
       resizeObserver.disconnect();
       dracoLoader.dispose();
       controls.dispose();
@@ -284,7 +328,7 @@ export default function ModelViewer3D({
         renderer.domElement.parentNode.removeChild(renderer.domElement);
       }
     };
-  }, [modelPath]);
+  }, [modelPath, isVisible]);
 
   // 2. React to Lumen & Lighting Adjustments
   useEffect(() => {

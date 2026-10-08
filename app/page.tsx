@@ -7,7 +7,7 @@ export default function Home() {
     <>
       <div id="hero-track" className="relative font-sans bg-black h-[450vh]">
         {/* Sticky container that stays in view while scrolling */}
-        <div className="sticky top-0 h-screen overflow-hidden flex flex-col">
+        <div className="sticky top-0 h-[100dvh] overflow-hidden flex flex-col">
 
           {/* Background Image Sequence */}
           <div className="absolute inset-0 z-0">

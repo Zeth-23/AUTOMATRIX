@@ -3,10 +3,19 @@
 import { useEffect, useRef } from "react";
 
 const FRAME_COUNT = 150;
-const PRELOAD_BATCH_SIZE = 15;
 // Breakpoint exclusively for smartphones / mobile phones (< 768px).
 // Tablets (>= 768px, e.g. iPad 768px/810px) and desktops use the 16:9 desktop sequence.
 const MOBILE_BREAKPOINT = 768;
+
+// Memory management:
+// Mobile 9:16 frames (1536x2752) decode to ~17MB uncompressed bitmap in RAM per image.
+// Capping mobile active images to a sliding window of ~14 frames prevents mobile OOM browser crashes.
+const MAX_MOBILE_CACHED_FRAMES = 14;
+const MOBILE_AHEAD_BUFFER = 6;
+const MOBILE_BEHIND_BUFFER = 2;
+
+// Desktop 16:9 frames (1280x720) are ~3.6MB each, desktop RAM is abundant
+const DESKTOP_PRELOAD_BATCH_SIZE = 15;
 
 const pad = (num: number, size: number) => {
   let s = num + "";
@@ -47,6 +56,39 @@ export default function ScrollCanvas() {
 
     isMobileRef.current = checkIsMobile();
 
+    // Evicts distant mobile frames to keep mobile RAM strictly bounded
+    const pruneMobileCache = (currentCenter: number) => {
+      const loadedSet = mobileLoadedFramesRef.current;
+      const images = mobileImagesRef.current;
+
+      if (loadedSet.size <= MAX_MOBILE_CACHED_FRAMES) return;
+
+      // Keep frames within active window: [currentCenter - BEHIND, currentCenter + AHEAD]
+      const minKeep = Math.max(1, currentCenter - MOBILE_BEHIND_BUFFER);
+      const maxKeep = Math.min(FRAME_COUNT, currentCenter + MOBILE_AHEAD_BUFFER);
+
+      // Collect candidates to evict (always keep frame 1 as instant fallback)
+      const toEvict: number[] = [];
+      for (const idx of loadedSet) {
+        if (idx !== 1 && (idx < minKeep || idx > maxKeep)) {
+          toEvict.push(idx);
+        }
+      }
+
+      // Evict furthest frames first
+      toEvict.sort((a, b) => Math.abs(b - currentCenter) - Math.abs(a - currentCenter));
+
+      for (const idx of toEvict) {
+        if (loadedSet.size <= MAX_MOBILE_CACHED_FRAMES) break;
+        const img = images[idx];
+        if (img) {
+          img.src = ""; // Release underlying decoded bitmap memory
+          images[idx] = null;
+        }
+        loadedSet.delete(idx);
+      }
+    };
+
     const loadFrame = (index: number, isMobileMode: boolean): Promise<void> => {
       return new Promise((resolve) => {
         const loadedSet = isMobileMode
@@ -66,6 +108,11 @@ export default function ScrollCanvas() {
         img.onload = () => {
           images[index] = img;
           loadedSet.add(index);
+
+          if (isMobileMode) {
+            pruneMobileCache(Math.round(currentFrameRef.current));
+          }
+
           if (isMobileMode === isMobileRef.current) {
             const currentInt = Math.round(currentFrameRef.current);
             if (index === 1 || index === currentInt) {
@@ -80,31 +127,76 @@ export default function ScrollCanvas() {
       });
     };
 
-    const preloadFrames = async (isMobileMode: boolean) => {
-      if (preloadedModesRef.current.has(isMobileMode)) return;
-      preloadedModesRef.current.add(isMobileMode);
+    // Preload mobile frames around an active center frame
+    const preloadMobileWindow = (centerFrame: number) => {
+      const start = Math.max(1, centerFrame - MOBILE_BEHIND_BUFFER);
+      const end = Math.min(FRAME_COUNT, centerFrame + MOBILE_AHEAD_BUFFER);
+
+      // Priority 1: center frame itself
+      loadFrame(centerFrame, true);
+
+      // Priority 2: frames immediately ahead
+      for (let i = centerFrame + 1; i <= end; i++) {
+        loadFrame(i, true);
+      }
+      // Priority 3: frames immediately behind
+      for (let i = centerFrame - 1; i >= start; i--) {
+        loadFrame(i, true);
+      }
+    };
+
+    const preloadDesktopFrames = async () => {
+      if (preloadedModesRef.current.has(false)) return;
+      preloadedModesRef.current.add(false);
 
       // Preload frame 1 first to display immediately
-      await loadFrame(1, isMobileMode);
+      await loadFrame(1, false);
 
       // Preload remaining frames progressively in batches
-      for (let i = 2; i <= FRAME_COUNT; i += PRELOAD_BATCH_SIZE) {
+      for (let i = 2; i <= FRAME_COUNT; i += DESKTOP_PRELOAD_BATCH_SIZE) {
         const batch: Promise<void>[] = [];
-        for (let j = 0; j < PRELOAD_BATCH_SIZE && i + j <= FRAME_COUNT; j++) {
-          batch.push(loadFrame(i + j, isMobileMode));
+        for (let j = 0; j < DESKTOP_PRELOAD_BATCH_SIZE && i + j <= FRAME_COUNT; j++) {
+          batch.push(loadFrame(i + j, false));
         }
         await Promise.all(batch);
       }
     };
 
-    // Preload initial frames for the current device
-    preloadFrames(isMobileRef.current);
+    const startPreloading = (forMobile: boolean) => {
+      if (forMobile) {
+        // Only load the initial small window on mobile to avoid tab memory crashes
+        preloadMobileWindow(1);
+      } else {
+        preloadDesktopFrames();
+      }
+    };
+
+    // Preload initial frames for current device
+    startPreloading(isMobileRef.current);
 
     const renderFrame = (index: number) => {
       const canvas = canvasRef.current;
       if (!canvas) return;
       const ctx = canvas.getContext("2d");
       if (!ctx) return;
+
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width === 0 || rect.height === 0) {
+        return;
+      }
+
+      // Cap DPR at 2 on mobile to avoid giant buffers and GPU VRAM exhaustion
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const targetWidth = Math.round(rect.width * dpr);
+      const targetHeight = Math.round(rect.height * dpr);
+
+      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+      }
+
+      const cw = canvas.width;
+      const ch = canvas.height;
 
       const isMobile = isMobileRef.current;
       const images = isMobile
@@ -122,7 +214,7 @@ export default function ScrollCanvas() {
         img = images[fallbackIndex];
       }
 
-      // If still not loaded in current mode, check alternative mode as fallback during switch
+      // If still not loaded in current mode, check alternative mode as fallback
       if (!img) {
         const otherImages = isMobile
           ? desktopImagesRef.current
@@ -134,45 +226,32 @@ export default function ScrollCanvas() {
         img = otherImages[fallbackIndex];
       }
 
-      const dpr = window.devicePixelRatio || 1;
-      const rect = canvas.getBoundingClientRect();
-
-      if (rect.width === 0 || rect.height === 0) {
-        return;
-      }
-
-      const targetWidth = Math.round(rect.width * dpr);
-      const targetHeight = Math.round(rect.height * dpr);
-
-      if (canvas.width !== targetWidth || canvas.height !== targetHeight) {
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
-        ctx.scale(dpr, dpr);
-      }
-
+      // Clear the canvas buffer completely
       ctx.fillStyle = "black";
-      ctx.fillRect(0, 0, rect.width, rect.height);
+      ctx.fillRect(0, 0, cw, ch);
 
-      if (!img) {
+      if (!img || img.width === 0 || img.height === 0) {
         return;
       }
 
-      const canvasRatio = rect.width / rect.height;
+      // Calculate cover dimensions directly using the real canvas buffer dimensions (cw, ch)
+      // This completely avoids DPR desynchronization and ensures 100% full-screen coverage!
+      const canvasRatio = cw / ch;
       const imgRatio = img.width / img.height;
 
-      let drawWidth = rect.width;
-      let drawHeight = rect.height;
+      let drawWidth = cw;
+      let drawHeight = ch;
       let offsetX = 0;
       let offsetY = 0;
 
       if (canvasRatio > imgRatio) {
-        // Canvas is wider than image
-        drawHeight = rect.width / imgRatio;
-        offsetY = (rect.height - drawHeight) / 2;
+        // Canvas is wider than image (cover by width, center vertically)
+        drawHeight = cw / imgRatio;
+        offsetY = (ch - drawHeight) / 2;
       } else {
-        // Image is wider than canvas
-        drawWidth = rect.height * imgRatio;
-        offsetX = (rect.width - drawWidth) / 2;
+        // Image is wider than canvas (cover by height, center horizontally)
+        drawWidth = ch * imgRatio;
+        offsetX = (cw - drawWidth) / 2;
       }
 
       ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
@@ -199,12 +278,14 @@ export default function ScrollCanvas() {
       );
       targetFrameRef.current = target;
 
-      // Proactively request loading target frame if not loaded yet
-      const loadedSet = isMobileRef.current
-        ? mobileLoadedFramesRef.current
-        : desktopLoadedFramesRef.current;
-      if (!loadedSet.has(target)) {
-        loadFrame(target, isMobileRef.current);
+      if (isMobileRef.current) {
+        // Dynamically stream and preload active mobile window around target
+        preloadMobileWindow(target);
+      } else {
+        // Desktop: load target if batch hasn't reached it yet
+        if (!desktopLoadedFramesRef.current.has(target)) {
+          loadFrame(target, false);
+        }
       }
     };
 
@@ -217,12 +298,9 @@ export default function ScrollCanvas() {
       const isMobileNow = checkIsMobile();
       if (isMobileNow !== isMobileRef.current) {
         isMobileRef.current = isMobileNow;
-        preloadFrames(isMobileNow);
+        startPreloading(isMobileNow);
       }
 
-      if (canvasRef.current) {
-        canvasRef.current.width = 0;
-      }
       renderFrame(Math.round(currentFrameRef.current));
       onScroll();
     };
