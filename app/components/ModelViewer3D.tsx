@@ -29,9 +29,16 @@ export default function ModelViewer3D({
     // Scene
     const scene = new THREE.Scene();
 
-    // Camera — positioned close to give ~4x perceived scale with wide angle
+    const getCameraDistance = (w: number, h: number) => {
+      const asp = w / h;
+      if (asp < 1.0) return 4.9;
+      if (asp < 1.35) return 4.3;
+      return 3.8;
+    };
+
+    // Camera — positioned dynamically so mobile viewports never clip the model
     const camera = new THREE.PerspectiveCamera(45, width / height, 0.1, 100);
-    camera.position.set(0, 0, 3.8);
+    camera.position.set(0, 0, getCameraDistance(width, height));
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({
@@ -239,6 +246,7 @@ export default function ModelViewer3D({
         const { width: newWidth, height: newHeight } = entry.contentRect;
         if (newWidth > 0 && newHeight > 0) {
           camera.aspect = newWidth / newHeight;
+          camera.position.z = getCameraDistance(newWidth, newHeight);
           camera.updateProjectionMatrix();
           renderer.setSize(newWidth, newHeight);
         }
@@ -260,7 +268,7 @@ export default function ModelViewer3D({
   }, [modelPath]);
 
   return (
-    <div className="relative w-full h-[580px] sm:h-[680px] md:h-[780px] lg:h-[880px] flex items-center justify-center">
+    <div className="relative w-full h-[320px] xs:h-[380px] sm:h-[480px] md:h-[680px] lg:h-[820px] flex items-center justify-center overflow-hidden">
       {/* Three.js canvas container */}
       <div
         ref={containerRef}
@@ -274,7 +282,7 @@ export default function ModelViewer3D({
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="flex items-center gap-3 px-5 py-2.5 rounded-full bg-black/5 backdrop-blur-sm text-xs text-gray-600 font-medium shadow-sm">
             <span className="w-2.5 h-2.5 rounded-full bg-lime-500 animate-ping"></span>
-            Loading 3D Model...
+            Cargando Modelo 3D...
           </div>
         </div>
       )}

@@ -241,22 +241,23 @@ export default function Home() {
         </section>
 
         {/* AI Platform Showcase Section — Light background */}
-        <section className="relative bg-[#f2f2f0] overflow-hidden py-16 md:py-24">
+        {/* AI Platform Showcase Section — Light background */}
+        <section className="relative bg-[#f2f2f0] overflow-hidden py-12 sm:py-16 md:py-24">
           {/* Full-width container */}
           <div className="max-w-screen-2xl mx-auto px-6 md:px-12 lg:px-20 relative z-10">
 
-            {/* Giant headline */}
+            {/* Giant headline — fully responsive font clamp to avoid horizontal scroll on mobile */}
             <h2
-              className="font-[family-name:var(--font-playfair)] text-[clamp(3.5rem,12vw,11rem)] leading-[0.95] font-normal text-black tracking-tight select-none"
+              className="font-[family-name:var(--font-playfair)] text-[clamp(1.75rem,8.2vw,11rem)] leading-[0.95] font-normal text-black tracking-tight select-none text-center md:text-left w-full break-words"
             >
-              DREAM<span className="text-transparent" style={{ WebkitTextStroke: '2px #000' }}>FRAME</span>.
+              DREAM<span className="text-transparent" style={{ WebkitTextStroke: 'clamp(1px, 0.2vw, 2px) #000' }}>FRAME</span>.
             </h2>
 
             {/* Bottom row: stats left, description center-left, metrics right */}
-            <div className="mt-12 md:mt-20 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-6 items-end">
+            <div className="mt-8 sm:mt-12 md:mt-20 grid grid-cols-1 md:grid-cols-12 gap-8 md:gap-6 items-center md:items-end">
 
               {/* Left block: avatar stack + big stat */}
-              <div className="md:col-span-3 flex flex-col gap-6">
+              <div className="md:col-span-3 flex flex-col items-center md:items-start text-center md:text-left gap-6 w-full max-w-sm mx-auto md:mx-0 order-1">
                 {/* Avatar stack */}
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-3">
@@ -264,46 +265,46 @@ export default function Home() {
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-400 to-cyan-400 border-2 border-[#f2f2f0]"></div>
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-yellow-400 border-2 border-[#f2f2f0]"></div>
                   </div>
-                  <div>
+                  <div className="text-left">
                     <span className="text-3xl md:text-4xl font-bold text-black leading-none">2M+</span>
                     <p className="text-gray-500 text-xs mt-0.5">Images generated</p>
                   </div>
                 </div>
 
                 {/* Description */}
-                <p className="text-black text-lg md:text-xl font-medium leading-snug max-w-xs">
+                <p className="text-black text-base sm:text-lg md:text-xl font-medium leading-snug max-w-xs">
                   The AI platform that keeps your flow with smart generation and built-in editing tools.
                 </p>
               </div>
 
               {/* Center 3D Model Creator with interactive rotation */}
-              <div className="md:col-span-6 flex items-center justify-center relative -my-8 md:-my-24 lg:-my-32 z-10">
+              <div className="md:col-span-6 flex items-center justify-center relative my-2 sm:my-4 md:-my-20 lg:-my-28 z-10 w-full order-2">
                 <ModelViewer3D modelPath="/3D-model/Caballero_Corona.glb" />
               </div>
 
               {/* Right block: vertical stat pills + CTA */}
-              <div className="md:col-span-3 flex flex-col justify-between h-full gap-8 z-20">
+              <div className="md:col-span-3 flex flex-col justify-between h-full gap-8 z-20 w-full max-w-sm mx-auto md:mx-0 order-3">
                 {/* Stat rows */}
-                <div className="flex flex-col gap-5">
+                <div className="flex flex-col gap-4 sm:gap-5 w-full">
                   <div className="flex items-center justify-between border-b border-black/10 pb-4">
-                    <span className="text-sm text-gray-500 uppercase tracking-wider">Styles Available</span>
-                    <span className="text-2xl font-bold text-black">150+</span>
+                    <span className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Styles Available</span>
+                    <span className="text-xl sm:text-2xl font-bold text-black">150+</span>
                   </div>
                   <div className="flex items-center justify-between border-b border-black/10 pb-4">
-                    <span className="text-sm text-gray-500 uppercase tracking-wider">Collaboration</span>
-                    <span className="text-2xl font-bold text-black">Real-time</span>
+                    <span className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">Collaboration</span>
+                    <span className="text-xl sm:text-2xl font-bold text-black">Real-time</span>
                   </div>
                   <div className="flex items-center justify-between pb-2">
-                    <span className="text-sm text-gray-500 uppercase tracking-wider">AI Models</span>
-                    <span className="text-2xl font-bold text-black">Next-gen</span>
+                    <span className="text-xs sm:text-sm text-gray-500 uppercase tracking-wider">AI Models</span>
+                    <span className="text-xl sm:text-2xl font-bold text-black">Next-gen</span>
                   </div>
                 </div>
 
                 {/* Circular CTA button matching the reference */}
-                <div className="flex justify-end pt-2">
+                <div className="flex justify-center md:justify-end pt-2 sm:pt-4 w-full">
                   <Link
                     href="#how-it-works"
-                    className="w-28 h-28 rounded-full bg-[#d4f842] text-black font-semibold text-xs flex items-center justify-center gap-1.5 shadow-lg hover:scale-105 active:scale-95 transition-transform duration-300 group cursor-pointer text-center px-2"
+                    className="w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-[#d4f842] text-black font-semibold text-xs flex items-center justify-center gap-1.5 shadow-lg hover:scale-105 active:scale-95 transition-transform duration-300 group cursor-pointer text-center px-2 shrink-0"
                   >
                     <span className="text-[10px]">▶</span>
                     <span>How it works?</span>
